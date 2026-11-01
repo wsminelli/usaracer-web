@@ -63,10 +63,10 @@ navegador** apaga o jogo e os saves.
   (pasta `C:\Program Files\Davilex\US Racer`, só inglês).
 - `USARacer.exe` trocado pelo executável NoCD que veio junto com o download
   (o do CD tem SafeDisc, que não roda no Wine).
-- **Patch de 32 bits** no `USARacer.exe` (3 trechos, 8 bytes). O jogo sempre
+- **Patch de 32 bits** no `USARacer.exe` (4 trechos, 9 bytes). O jogo sempre
   liga o vídeo em 640×480×16 bits, e em 16 bits o DirectDraw do Wine (9 e 11)
   não consegue criar as texturas DXT1 com mipmap: o jogo fecha antes do menu.
-  Com o patch ele usa 32 bits. O launcher também aplica esse patch sozinho se
+  Com o patch ele usa 32 bits, e aceita a tela 640×480×32 (única que o Boxedwine oferece). O launcher também aplica esse patch sozinho se
   receber o exe NoCD sem patch.
 - Vídeos de abertura (`Data\Video`, codec MP42) ficam de fora: o Wine não tem
   esse codec e o jogo segue normalmente sem eles.
@@ -83,7 +83,7 @@ de arquivos do boxedwine.org, que este ambiente não alcança.
 | Tela preta ou travada ao abrir | Troque para *Thread única com JIT* e jogue de novo |
 | "Sound system could not be initialized" | Clique na tela antes do jogo abrir; se persistir, edite `USARacerMain.INI` e ponha `DisableSound=1`, reinstale |
 | Muito lento | Use o multi-thread (precisa de https ou localhost) e feche outras abas; o emulador é bem mais lento que um PC nativo |
-| Imagem pequena | Em *Controles e opções*, mude a resolução ou use tela cheia do Boxedwine |
+| Imagem pequena | Use a tela cheia do Boxedwine |
 | Quer reinstalar do zero | **Remover do navegador** e instalar de novo |
 
 O console do navegador (<kbd>F12</kbd>) mostra o log do Wine, útil para

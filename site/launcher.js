@@ -35,7 +35,7 @@ const EXCLUDED = new Set([
 
 // USARacer.exe: três variantes conhecidas.
 const EXE_SIZE = 2854912;
-const EXE_PATCHED = "1a28cc908d60bf4e7611a0dd8607e319a262e0a5b1e43d236ec2aaafeb09c84b";
+const EXE_PATCHED = "fc2a92f2041aaabba2d09c867a495c70746e6be5db04f28e6cdc7deba0f6a1f1";
 const EXE_NOCD = "2b8ae62c1fbd185f0f99de7c3e4edced36be0a5b78a85a69d91149675809ec18";
 const EXE_CD = "2909c712a4551aa6ddf64a82855c401c3618db23dca4068bf406a5bed79417e0";
 // Patch de compatibilidade: força o modo de vídeo de 16 para 32 bits. Em 16
@@ -45,6 +45,9 @@ const EXE_PATCHES = [
   { offset: 0x117aef, from: "b810000000", to: "b820000000" },       // bpp do renderer
   { offset: 0x11866b, from: "b810000000", to: "b820000000" },       // getter de bpp
   { offset: 0x1ecd45, from: "8bbc24a0000000", to: "bf200000009090" }, // SetDisplayMode
+  // O navegador só oferece 640x480x32; a tabela de modos passa a marcar a
+  // profundidade "16" quando encontra um modo de 32 bits (senão: Illegal Bitdepth).
+  { offset: 0x125a4c, from: "b810000000", to: "b820000000" },
 ];
 
 const $ = (id) => document.getElementById(id);
@@ -256,7 +259,8 @@ async function prepareExe(entry) {
   if (hash === EXE_CD) return { bytes, state: "cd" };
   const matches = (patch, key) => bytesToHex(bytes.subarray(patch.offset, patch.offset + patch[key].length / 2)) === patch[key];
   if (hash === EXE_PATCHED || EXE_PATCHES.every((pt) => matches(pt, "to"))) return { bytes, state: "patched" };
-  if (hash === EXE_NOCD || EXE_PATCHES.every((pt) => matches(pt, "from"))) {
+  // NoCD sem patch, ou com só parte dos patches (versões anteriores do zip).
+  if (hash === EXE_NOCD || EXE_PATCHES.every((pt) => matches(pt, "from") || matches(pt, "to"))) {
     for (const pt of EXE_PATCHES) bytes.set(hexToBytes(pt.to), pt.offset);
     return { bytes, state: "patched-now" };
   }
@@ -288,8 +292,8 @@ async function checkSource(raw) {
   if (exeEntry) {
     const exe = await prepareExe(exeEntry);
     const msg = {
-      "patched": ["NoCD com patch de 32 bits", "ok"],
-      "patched-now": ["NoCD; patch de 32 bits será aplicado", "ok"],
+      "patched": ["NoCD com patches de 32 bits", "ok"],
+      "patched-now": ["NoCD; patches de 32 bits serão aplicados", "ok"],
       "cd": ["é o exe original do CD (com proteção); use o da pasta NoCD", "bad"],
       "unknown": ["versão desconhecida; pode não funcionar", "warn"],
     }[exe.state];
@@ -402,7 +406,7 @@ function launchUrl() {
     w: "d:/",
     sound: "true",
     bpp: "32",
-    resolution: $("resolution").value,
+    resolution: "640x480",
   });
   return `runtime/${selectedRuntime()}/boxedwine.html?${params}`;
 }
@@ -418,7 +422,6 @@ const canIsolate = "serviceWorker" in navigator && window.isSecureContext;
 $(canIsolate ? "rt-mt" : "rt-st").checked = true;
 $("rt-mt").disabled = !canIsolate;
 for (const r of document.querySelectorAll('input[name="runtime"]')) r.addEventListener("change", updateLaunchUrl);
-$("resolution").addEventListener("change", updateLaunchUrl);
 updateLaunchUrl();
 
 $("pick-zip").addEventListener("click", () => $("zip-input").click());
