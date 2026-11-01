@@ -404,10 +404,11 @@ function launchUrl() {
     storageKey: STORAGE_KEY,
     p: "USARacer.exe",
     w: "d:/",
-    sound: "true",
+    sound: $("opt-sound").checked ? "true" : "false",
     bpp: "32",
     resolution: "640x480",
   });
+  if ($("opt-jit-record").checked) params.set("jit-record", "true");
   return `runtime/${selectedRuntime()}/boxedwine.html?${params}`;
 }
 
@@ -421,7 +422,7 @@ checkSupport();
 const canIsolate = "serviceWorker" in navigator && window.isSecureContext;
 $(canIsolate ? "rt-mt" : "rt-st").checked = true;
 $("rt-mt").disabled = !canIsolate;
-for (const r of document.querySelectorAll('input[name="runtime"]')) r.addEventListener("change", updateLaunchUrl);
+for (const r of document.querySelectorAll('input[name="runtime"], #opt-sound, #opt-jit-record')) r.addEventListener("change", updateLaunchUrl);
 updateLaunchUrl();
 
 $("pick-zip").addEventListener("click", () => $("zip-input").click());

@@ -99,6 +99,17 @@ if [ -d "$OUT/runtime/mt" ]; then
     fi
 fi
 
+# --- Cache do JIT gravado (opcional) ---------------------------------------------
+# jit-cache/<st|mt>/wasm-jit-modules.zip, gerado com "Save JIT Cache" no modo
+# jit-record=true. O shell baixa esse zip e já começa com o código compilado.
+for target in $TARGETS; do
+    d=${SITE_DIR[$target]}
+    if [ -f "$ROOT/jit-cache/$d/wasm-jit-modules.zip" ]; then
+        cp "$ROOT/jit-cache/$d/wasm-jit-modules.zip" "$OUT/runtime/$d/"
+        echo "cache do JIT incluído para $d"
+    fi
+done
+
 # --- Site --------------------------------------------------------------------------
 cp -r "$ROOT/site/." "$OUT/"
 cp "$ROOT/LICENSES.md" "$OUT/LICENSES.md"

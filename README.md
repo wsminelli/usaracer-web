@@ -57,6 +57,24 @@ abra o Ubuntu e rode os comandos acima dentro desta pasta. Precisa de
 Os saves ficam no navegador (drive `D:` do Boxedwine). **Remover do
 navegador** apaga o jogo e os saves.
 
+## Deixando mais liso
+
+O Boxedwine emula um processador x86 inteiro dentro do navegador, então nunca
+fica igual a um PC nativo. O que mais ajuda, em ordem:
+
+1. **Multi-thread com JIT** selecionado (é o padrão no Pages).
+2. Desmarcar **Show console** na página do Boxedwine.
+3. No jogo, **Options**: qualidade gráfica baixa, sombras e efeitos desligados.
+4. Desligar o **Som** no launcher, se ainda engasgar.
+5. **Cache do JIT**: os trancos aparecem sempre que o emulador compila código
+   novo (início de corrida, pista nova). Dá para gravar esse código compilado:
+   - marque *Gravar cache do JIT*, jogue umas corridas em pistas diferentes;
+   - clique em **Save JIT Cache** na página do Boxedwine e salve o
+     `wasm-jit-modules.zip`;
+   - envie ele para `jit-cache/mt/wasm-jit-modules.zip` neste repositório
+     (`jit-cache/st/` se gravou no modo thread única). O próximo deploy inclui o
+     cache e o jogo já começa com esse código pronto.
+
 ## O que foi feito no jogo (`USARacer-jogo.zip`)
 
 - Instalado a partir do ISO original com o instalador Wise do próprio CD
