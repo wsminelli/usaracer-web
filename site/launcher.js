@@ -454,6 +454,39 @@ $("remove").addEventListener("click", async () => {
   }
 });
 
+// Mostra os logs que o jogo grava no D: (motivo de erros como "abnormal program termination").
+async function readDriveText(db, name) {
+  const tx = db.transaction(IDB_STORE, "readonly");
+  const store = tx.objectStore(IDB_STORE);
+  const keys = await new Promise((r) => { const q = store.getAllKeys(); q.onsuccess = () => r(q.result); });
+  const key = keys.find((k) => String(k).toLowerCase() === (D_DRIVE + "/" + name).toLowerCase());
+  if (!key) return null;
+  const entry = await new Promise((r) => { const q = store.get(key); q.onsuccess = () => r(q.result); });
+  return entry && entry.contents ? entry : null;
+}
+$("show-log").addEventListener("click", async () => {
+  const out = $("game-log");
+  out.hidden = false;
+  out.textContent = "Lendo...";
+  let db;
+  try {
+    db = await openDrive();
+    const parts = [];
+    const exe = await readDriveText(db, "USARacer.exe");
+    if (exe) parts.push("USARacer.exe instalado: " + (await sha256(exe.contents)) + (EXE_PATCHED === (await sha256(exe.contents)) ? " (versão atual)" : " (VERSÃO ANTIGA: remova e instale de novo)"));
+    for (const name of ["ErrorUS Racer00.log", "DebugUS Racer00.log"]) {
+      const e = await readDriveText(db, name);
+      const text = e ? new TextDecoder("latin1").decode(e.contents).replace(/\r/g, "").replace(/\n{3,}/g, "\n\n") : "(não existe ainda)";
+      parts.push("===== " + name + " =====\n" + text.slice(-6000));
+    }
+    out.textContent = parts.join("\n\n");
+  } catch (e) {
+    out.textContent = "Não consegui ler: " + (e.message || e);
+  } finally {
+    db?.close();
+  }
+});
+
 isInstalled().then((yes) => {
   setInstalled(yes);
   if (yes) setStatus($("install-status"), "Já instalado neste navegador. Pode ir direto para o passo 3.", "ok");
