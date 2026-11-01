@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>US Racer no Navegador</title>
+<meta name="description" content="Roda a sua cópia de US Racer (Davilex, 2001) no navegador através do Boxedwine.">
+<style>
+  :root {
+    --bg: #f4f3ef; --panel: #ffffff; --ink: #1a1b1f; --muted: #5c5d66;
+    --line: #dcd9d1; --accent: #c2410c; --accent-ink: #ffffff;
+    --ok: #1d7a3e; --warn: #9a5b00; --bad: #b3122b; --code: #eeece6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111216; --panel: #1a1b21; --ink: #ececf0; --muted: #a2a3ad;
+      --line: #2c2d35; --accent: #f97316; --accent-ink: #111216;
+      --ok: #4cc27a; --warn: #e3a64a; --bad: #ff6b7d; --code: #24252c;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111216; --panel: #1a1b21; --ink: #ececf0; --muted: #a2a3ad;
+    --line: #2c2d35; --accent: #f97316; --accent-ink: #111216;
+    --ok: #4cc27a; --warn: #e3a64a; --bad: #ff6b7d; --code: #24252c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 40px 16px 64px; }
+  h1 { font-size: 1.9rem; line-height: 1.2; margin: 0 0 6px; letter-spacing: -0.01em; }
+  .lede { color: var(--muted); margin: 0 0 28px; }
+  section { background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+    padding: 20px; margin: 0 0 16px; }
+  section h2 { font-size: 1.05rem; margin: 0 0 8px; display: flex; gap: 10px; align-items: baseline; }
+  .n { color: var(--accent); font-variant-numeric: tabular-nums; font-weight: 700; }
+  p { margin: 0 0 12px; }
+  button { font: inherit; font-weight: 600; border-radius: 7px; padding: 9px 16px; cursor: pointer;
+    border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); }
+  button.secondary { background: transparent; color: var(--ink); border-color: var(--line); }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  code, .mono { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 0.88em; }
+  code { background: var(--code); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+  ul.files { list-style: none; padding: 0; margin: 12px 0 0; }
+  ul.files li { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0;
+    border-top: 1px solid var(--line); font-size: 0.92rem; }
+  ul.files li span:first-child { overflow-wrap: anywhere; }
+  ul.files li span:last-child { color: var(--muted); text-align: right; }
+  .ok { color: var(--ok) !important; } .warn { color: var(--warn) !important; } .bad { color: var(--bad) !important; }
+  .status { min-height: 1.5em; margin-top: 10px; font-size: 0.94rem; }
+  progress { width: 100%; height: 8px; margin-top: 10px; accent-color: var(--accent); }
+  label.choice { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+  select { font: inherit; padding: 4px 6px; border-radius: 6px; border: 1px solid var(--line);
+    background: var(--panel); color: var(--ink); }
+  details { margin-top: 8px; color: var(--muted); font-size: 0.93rem; }
+  kbd { font-family: inherit; font-size: 0.85em; border: 1px solid var(--line); border-bottom-width: 2px;
+    border-radius: 4px; padding: 0 5px; background: var(--code); }
+  table.keys { border-collapse: collapse; font-size: 0.92rem; }
+  table.keys td { padding: 3px 14px 3px 0; vertical-align: top; }
+  footer { color: var(--muted); font-size: 0.85rem; margin-top: 28px; }
+  footer a, section a { color: inherit; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <h1>US Racer no navegador</h1>
+  <p class="lede">Roda a sua cópia do US Racer (Davilex, 2001) dentro do navegador, sobre o Boxedwine
+    (Wine compilado para WebAssembly, com Direct3D convertido para WebGL). Os arquivos do jogo
+    ficam só no seu navegador e não são enviados para nenhum servidor.</p>
+
+  <section>
+    <h2><span class="n">0</span> Navegador</h2>
+    <ul class="files" id="support-list"></ul>
+  </section>
+
+  <section>
+    <h2><span class="n">1</span> Escolha o jogo</h2>
+    <p>Selecione o arquivo <code>USARacer-jogo.zip</code> ou a pasta <code>USARacer</code>
+      (a que tem o <code>USARacer.exe</code>). A pasta/zip só é lida, nunca alterada.</p>
+    <div class="row">
+      <button id="pick-zip">Escolher o .zip</button>
+      <button id="pick-folder" class="secondary">Escolher a pasta</button>
+    </div>
+    <input type="file" id="zip-input" accept=".zip,application/zip" hidden>
+    <input type="file" id="folder-input" webkitdirectory hidden>
+    <div class="status" id="source-status"></div>
+    <ul class="files" id="source-files"></ul>
+  </section>
+
+  <section>
+    <h2><span class="n">2</span> Instalar no navegador</h2>
+    <p>Copia o jogo (cerca de 265 MB) para o armazenamento do navegador, que o Boxedwine monta
+      como drive <code>D:</code>. Só precisa fazer uma vez por navegador.</p>
+    <div class="row">
+      <button id="install" disabled>Instalar</button>
+      <button id="remove" class="secondary" hidden>Remover do navegador</button>
+    </div>
+    <progress id="install-progress" hidden></progress>
+    <div class="status" id="install-status"></div>
+  </section>
+
+  <section>
+    <h2><span class="n">3</span> Jogar</h2>
+    <p>Abre o Boxedwine e inicia <code>USARacer.exe</code>. A primeira carga baixa uns 100 MB
+      (o emulador e o Wine) e leva alguns minutos; depois fica em cache. Clique na tela do jogo
+      uma vez para liberar o som e o teclado.</p>
+    <label class="choice"><input type="radio" name="runtime" value="mt" id="rt-mt">
+      Multi-thread com JIT (mais rápido; precisa de https ou localhost)</label>
+    <label class="choice"><input type="radio" name="runtime" value="st" id="rt-st">
+      Thread única com JIT (mais compatível)</label>
+    <div class="row" style="margin-top:12px">
+      <button id="launch" disabled>Jogar</button>
+    </div>
+    <details>
+      <summary>Controles e opções</summary>
+      <table class="keys">
+        <tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>←</kbd> <kbd>→</kbd></td><td>acelerar, frear, virar; navegar nos menus</td></tr>
+        <tr><td><kbd>Enter</kbd></td><td>confirmar no menu</td></tr>
+        <tr><td><kbd>Esc</kbd></td><td>voltar / pausar</td></tr>
+        <tr><td>Letras do teclado</td><td>digitar o nome na primeira tela, depois <kbd>↓</kbd> e <kbd>Enter</kbd> no OK</td></tr>
+      </table>
+      <p style="margin-top:10px">Resolução da tela do Wine:
+        <select id="resolution">
+          <option value="640x480" selected>640×480 (a do jogo)</option>
+          <option value="800x600">800×600</option>
+          <option value="1024x768">1024×768</option>
+        </select>
+      </p>
+      <p>Endereço que será aberto: <code id="launch-url"></code></p>
+    </details>
+  </section>
+
+  <footer>
+    US Racer é marca da Davilex. Este launcher não contém o jogo; ele roda a cópia que você escolher.
+    Emulação: <a href="https://github.com/danoon2/Boxedwine">Boxedwine</a> (GPL-2.0) e Wine (LGPL).
+    Ver <a href="LICENSES.md">LICENSES.md</a>.
+  </footer>
+</main>
+<script src="launcher.js"></script>
+</body>
+</html>

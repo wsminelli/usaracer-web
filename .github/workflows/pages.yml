@@ -1,0 +1,50 @@
+name: Compilar e publicar no GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache do Emscripten e do Boxedwine
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: runtime-${{ hashFiles('scripts/build-runtime.sh') }}
+
+      - name: Compilar runtime e montar o site
+        run: bash scripts/build-runtime.sh
+
+      - name: Conferir tamanhos (limite do Pages)
+        run: |
+          du -sh dist
+          find dist -type f -size +95M -printf '%s %p\n'
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
